@@ -20,5 +20,10 @@
   "workspaces": [
     "apps/*",
     "packages/*"
-  ]
+  ],
+  "dependencies": {
+    "@prisma/client": "6.11.1",
+    "@types/minimatch": "^6.0.0",
+    "prisma": "^6.11.1"
+  }
 }
