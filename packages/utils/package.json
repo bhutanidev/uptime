@@ -16,6 +16,7 @@
   "exports": {
     "./ApiError": "./ApiError.ts",
     "./ApiResponse": "./ApiResponse.ts",
-    "./AsyncHandler": "./AsyncHandler.ts"
+    "./AsyncHandler": "./AsyncHandler.ts",
+    "./ErrorHandler": "./ErrorHandler.ts"
   }
 }

@@ -23,7 +23,11 @@
   ],
   "dependencies": {
     "@prisma/client": "6.11.1",
+    "@types/bcrypt": "^5.0.2",
+    "@types/jsonwebtoken": "^9.0.10",
     "@types/minimatch": "^6.0.0",
+    "bcrypt": "^6.0.0",
+    "jsonwebtoken": "^9.0.2",
     "prisma": "^6.11.1"
   }
 }

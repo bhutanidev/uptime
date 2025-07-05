@@ -8,14 +8,16 @@
   },
   "peerDependencies": {
     "typescript": "^5",
-    "db":"*",
-    "utils":"*"
+    "db": "*",
+    "utils": "*"
   },
   "dependencies": {
+    "@types/cookie-parser": "^1.4.9",
     "@types/express": "^5.0.3",
-    "express": "^5.1.0"  
+    "cookie-parser": "^1.4.7",
+    "express": "^5.1.0"
   },
   "scripts": {
-    "dev":"bun index.ts"
+    "dev": "bun index.ts"
   }
 }
