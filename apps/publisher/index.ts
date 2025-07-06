@@ -1,15 +1,6 @@
 import prisma from "db/client";
 import { addEntry } from "reddisstream/stream";
 
-
-// const main = async()=>{
-//     try {
-//         const newEntry  = await addEntry("google.com","1")
-//         console.log(newEntry)
-//     } catch (error) {
-//         console.log(error)
-//     }
-// }
 const main = async() => {
     const allWebsites = await prisma.website.findMany({
         select:{

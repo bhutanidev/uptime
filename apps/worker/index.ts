@@ -49,7 +49,7 @@ const generatePromise = async(website_id : any , url : any)=>{
             await prisma.websiteTick.create({
                 data:{
                     createdAt:starttime,
-                    response_time_in_ms: st-Date.now(),
+                    response_time_in_ms: 0,
                     status:"down",
                     region_id:region,
                     website_id:website_id

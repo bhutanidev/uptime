@@ -3,6 +3,41 @@ import ApiError from "utils/ApiError";
 import ApiResponse from "utils/ApiResponse";
 import asyncHandler from "utils/AsyncHandler";
 
+export const getWebsiteController = asyncHandler(async(req,res,next)=>{
+    const id = req.userId
+    try {
+        const websites = await prisma.website.findMany({
+            where:{
+                user_id:id
+            },
+            include:{
+                website_tick:{
+                    orderBy:{
+                        createdAt:'desc'
+                    },
+                    select:{
+                        status:true,
+                        response_time_in_ms:true
+                    },
+                    take:1
+                },
+            }
+        })
+        console.log(websites)
+        const response = websites.map((website)=>{
+            return{
+                id:website.id,
+                url:website.url,
+                status:website?.website_tick?.[0]?.status || "unknown",
+                response_time_in_ms:website?.website_tick?.[0]?.response_time_in_ms || "-"
+            }
+        })
+        res.send(new ApiResponse(200,{websites:response},"Fetch successfull"))
+    } catch (error) {
+        next(new ApiError(500,"Internal db error"))
+    }
+})
+
 export const addNewWebsite = asyncHandler(async(req,res,next)=>{
     const id = req.userId
     const {url} = req.body
@@ -60,3 +95,38 @@ export const getStatusController = asyncHandler(async(req,res,next)=>{
         
     }
 }) 
+
+export const recentStatusController = asyncHandler(async(req,res,next)=>{
+    const userId  = req.userId
+    const websiteId = req.params.websiteId as string
+    const limit = parseInt(req.query.limit as string) || 10
+    const page = parseInt(req.query.page as string) || 1
+
+    if(!websiteId){
+        next(new ApiError(400,"Website id not found"))
+        return
+    }
+    const skip = (page -1)*10
+
+    try {
+        const websites = await prisma.websiteTick.findMany({
+            where:{
+                website_id:websiteId
+            },
+            orderBy:{
+                createdAt:'desc'
+            },
+            select:{
+                createdAt:true,
+                status:true,
+                response_time_in_ms:true
+            },
+            skip:skip,
+            take:limit
+        })
+        console.log(websites)
+        res.json(new ApiResponse(200,{websites},"Fetch successfull"))
+    } catch (error) {
+        next(new ApiError(500,"Id not valid"))
+    }
+})
