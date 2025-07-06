@@ -9,5 +9,9 @@
   "peerDependencies": {
     "typescript": "^5",
     "reddisstream": "*"
+  },
+  "dependencies": {
+    "axios": "^1.10.0",
+    "db": "*"
   }
 }

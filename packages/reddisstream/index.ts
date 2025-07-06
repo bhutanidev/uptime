@@ -1,30 +1,35 @@
 import { createClient } from 'redis';
 
 const client = createClient();
-const stream = process.env.STREAM!
+const stream = "uptime:website"
 const init = async()=>{
     client.on('error', err => console.log('Redis Client Error', err));
     await client.connect();
 }
+export const initRegion=async(region:string)=>{
+    try {
+        const res18 = await client.xGroupCreate(stream, region, '$');
+    } catch (error) {
+        console.log(error);
+    }
+}
 init()
 export const addEntry = async(website_id:string , url:string)=>{
+    
     try {
         const res1 = await client.xAdd(
         stream, '*', {
             "id":website_id,
             "url":url
         })
-        console.log(res1)
+        return res1
     } catch (error) {
         console.log(error)
     }
 }
 export const getGroup = async(region:string,workerName : string|undefined)=>{
-    try {
-        const res18 = await client.xGroupCreate(stream, region, '$');
-    } catch (error) {
-        console.log(error);
-    }
+    // console.log(stream)
+
     workerName = workerName || ""
     const res20 = await client.xReadGroup(
     region,
@@ -34,9 +39,19 @@ export const getGroup = async(region:string,workerName : string|undefined)=>{
     }, {
         'COUNT': 5
     })
-    console.log("fetched website: " , res20)
+    // console.log("fetched website: " , res20)
+    if(!res20){
+        return undefined
+    }
     // @ts-ignore
-    const response : {url:string , id:string} = {url: res20[0].messages[0].message.url ,id: res20[0].messages[0].message.id}
+    const res = res20[0]?.messages as any[]
+    const response = res.map((website)=>{
+        return{
+            id:website.id,
+            website_id:website.message.id,
+            url:website.message.url
+        }
+    })
     return response
 }
 
@@ -50,4 +65,8 @@ export const sendAck = async(region:string,redis_id : string)=>{
         
     }
 
+}
+
+export async function sendBulkAck(consumerGroup: string, eventIds: string[]) {
+    eventIds.map(eventId => sendAck(consumerGroup, eventId));
 }
