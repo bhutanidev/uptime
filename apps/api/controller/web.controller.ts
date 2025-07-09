@@ -17,19 +17,22 @@ export const getWebsiteController = asyncHandler(async(req,res,next)=>{
                     },
                     select:{
                         status:true,
-                        response_time_in_ms:true
+                        response_time_in_ms:true,
+                        createdAt:true
                     },
                     take:1
                 },
             }
         })
         console.log(websites)
+        const currentTime = new Date(Date.now())
         const response = websites.map((website)=>{
             return{
                 id:website.id,
                 url:website.url,
                 status:website?.website_tick?.[0]?.status || "unknown",
-                response_time_in_ms:website?.website_tick?.[0]?.response_time_in_ms || "-"
+                response_time_in_ms:website?.website_tick?.[0]?.response_time_in_ms || 0,
+                createdAt : website?.website_tick?.[0]?.createdAt || 0
             }
         })
         res.send(new ApiResponse(200,{websites:response},"Fetch successfull"))

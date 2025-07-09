@@ -3,17 +3,8 @@ import React, { useState, useEffect } from 'react';
 import { Check, Activity, AlertTriangle, BarChart3, Zap, GitBranch, ArrowRight, Shield, Clock, TrendingUp, Menu, X } from 'lucide-react';
 
 const UptimeLanding = () => {
-  const [isVisible, setIsVisible] = useState(false);
-  const [currentTime, setCurrentTime] = useState(new Date());
+  const [isVisible, setIsVisible] = useState(true);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-
-  useEffect(() => {
-    setIsVisible(true);
-    const timer = setInterval(() => {
-      setCurrentTime(new Date());
-    }, 1000);
-    return () => clearInterval(timer);
-  }, []);
 
   const features = [
     {
@@ -81,9 +72,6 @@ const UptimeLanding = () => {
               <a href="#features" className="text-slate-400 hover:text-slate-200 transition-colors">Features</a>
               <a href="#docs" className="text-slate-400 hover:text-slate-200 transition-colors">Docs</a>
               <a href="#pricing" className="text-slate-400 hover:text-slate-200 transition-colors">Pricing</a>
-              <span className="text-sm text-slate-500 font-mono border border-slate-800 px-3 py-1 rounded-md">
-                {currentTime.toLocaleTimeString()}
-              </span>
               <button className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-all duration-200 hover:scale-105">
                 Get Started
               </button>
