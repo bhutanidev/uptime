@@ -18,111 +18,58 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Website } from '@/lib/types';
 import StatusBox from '@/components/ui/statusBox';
-import { ChartLineLinear } from '@/components/ui/lineChart';
+import { chartData, ChartLineLinear } from '@/components/ui/lineChart';
+import { api, readableDate } from '@/lib/utils';
+import DashboardHeader from '@/components/ui/dashboardHeader';
+import { isAxiosError } from 'axios';
 
-// Types
-
-interface ResponseTimeData {
-  time: string;
-  responseTime: number;
-  timestamp: number;
-}
 
 interface LogEntry {
   id: number;
-  timestamp: string;
+  createdAt: string;
   status: 'up' | 'down' | 'unknown';
-  responseTime: string;
-  message: string;
-  statusCode?: number;
+  response_time_in_ms: number;
 }
 
-
-// Main Website Detail Page Component
 const WebsiteDetailPage: React.FC = () => {
   const params = useParams();
   const router = useRouter();
   const websiteId = params?.websiteId as string;
 
   const [website, setWebsite] = useState<Website | null>(null);
-  const [responseTimeData, setResponseTimeData] = useState<ResponseTimeData[]>([]);
+  const [responseTimeData, setResponseTimeData] = useState<chartData[]>([]);
   const [logs, setLogs] = useState<LogEntry[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Mock function to generate response time data for last 30 minutes
-  const generateResponseTimeData = (): ResponseTimeData[] => {
-    const data: ResponseTimeData[] = [];
-    const now = new Date();
-    
-    for (let i = 29; i >= 0; i--) {
-      const timestamp = new Date(now.getTime() - i * 60000); // Every minute
-      const responseTime = Math.floor(Math.random() * 300) + 50; // 50-350ms
-      
-      data.push({
-        time: timestamp.toLocaleTimeString('en-US', { 
-          hour12: false, 
-          hour: '2-digit', 
-          minute: '2-digit' 
-        }),
-        responseTime,
-        timestamp: timestamp.getTime()
-      });
-    }
-    
-    return data;
-  };
-
-  // Mock function to generate logs
-  const generateLogs = (): LogEntry[] => {
-    const statuses: ('up' | 'down' | 'unknown')[] = ['up', 'up', 'up', 'up', 'up', 'up', 'down', 'up', 'up', 'up', 'up', 'up', 'down', 'up', 'up', 'up', 'unknown', 'up', 'up', 'up'];
-    const logs: LogEntry[] = [];
-    const now = new Date();
-    
-    for (let i = 0; i < 20; i++) {
-      const timestamp = new Date(now.getTime() - i * 300000); // Every 5 minutes
-      const status = statuses[i];
-      const responseTime = status === 'up' ? `${Math.floor(Math.random() * 300) + 50}ms` : '--';
-      
-      logs.push({
-        id: i + 1,
-        timestamp: timestamp.toLocaleString(),
-        status,
-        responseTime,
-        message: status === 'up' ? 'Health check successful' : 
-                status === 'down' ? 'Connection timeout' : 'Health check pending',
-        statusCode: status === 'up' ? 200 : status === 'down' ? 500 : undefined
-      });
-    }
-    
-    return logs;
-  };
-
-  // Fetch website data
   useEffect(() => {
     const fetchWebsiteData = async () => {
       try {
         setIsLoading(true);
+        const res = await api.get(`/api/website/status/${websiteId}?page=1&limit10`)
+        const {data} = res
+        // console.log(data);
         
-        // Simulate API call
-        await new Promise(resolve => setTimeout(resolve, 1500));
+        const newlogs = data.data.websites
+
+        const websitedetails : Website = {
+            id:data.data.id,
+            url:data.data.url,
+            response_time_in_ms:parseInt(data.data.response_time_in_ms),
+            lastChecked:data.data.lastChecked,
+            status:data.data.status
+        }
+        console.log(websitedetails);
         
-        // Mock website data
-        const mockWebsite: Website = {
-          id: parseInt(websiteId),
-          url: 'https://mywebsite.com',
-          status: 'up',
-          response_time_in_ms: '245ms',
-          lastChecked: '2 min ago',
-        };
+        setLogs([...newlogs])
+        setWebsite(websitedetails)
         
-        setWebsite(mockWebsite);
-        setResponseTimeData(generateResponseTimeData());
-        setLogs(generateLogs());
-        
-      } catch (err) {
-        setError('Failed to load website data');
-        console.error('Error fetching website data:', err);
+      } catch (error) {
+            if(isAxiosError(error) && error.status==403){
+                router.push('/signin')
+            }else if(isAxiosError(error)){
+                alert(error.response?.data?.message)
+            }
       } finally {
         setIsLoading(false);
       }
@@ -131,9 +78,25 @@ const WebsiteDetailPage: React.FC = () => {
     if (websiteId) {
       fetchWebsiteData();
     }
-  }, [websiteId]);
+  }, [websiteId])
+  useEffect(()=>{
+    console.log(logs);
+    
+    const cd:chartData[] = logs.map((log)=>{
+        return{
+            response_time_in_ms:log.response_time_in_ms,
+            time:log.createdAt
+        }
+    })
+    console.log("inside use effect " , cd);
+    
+    setResponseTimeData([...cd])
+  } , [setLogs , logs])
 
   const getLogStatusBadge = (status: LogEntry['status']) => {
+    if(!status){
+        return(<>Error...</>)
+    }
     switch (status) {
       case 'up':
         return (
@@ -184,57 +147,8 @@ const WebsiteDetailPage: React.FC = () => {
       
       <div className="relative z-10">
         {/* Header */}
-        <header className="border-b border-slate-800/50 backdrop-blur-sm">
-          <div className="max-w-7xl mx-auto px-6 py-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-4">
-                <Button 
-                  variant="outline" 
-                  size="sm"
-                  onClick={() => router.push('/dashboard')}
-                  className="border-slate-700 hover:text-slate-300 hover:bg-slate-800 text-black"
-                >
-                  <ArrowLeft className="w-4 h-4 mr-2 text-black hover:text-slate-300" />
-                  Back
-                </Button>
-                <div className="flex items-center space-x-3">
-                  <div className="w-9 h-9 bg-slate-900 border border-slate-700 rounded-lg flex items-center justify-center">
-                    <Activity className="w-5 h-5 text-blue-400" />
-                  </div>
-                  <div>
-                    <h1 className="text-2xl font-bold text-slate-100">
-                      {isLoading ? 'Loading...' : website?.url || 'Website Details'}
-                    </h1>
-                    <p className="text-sm text-slate-400">Website Monitoring Details</p>
-                  </div>
-                </div>
-              </div>
-              
-              <div className="flex items-center space-x-4">
-                {website && (
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
-                    className="border-slate-700 hover:text-slate-300 hover:bg-slate-800 text-black"
-                    onClick={() => window.open(website.url, '_blank')}
-                  >
-                    <ExternalLink className="w-4 h-4 mr-2 text-black hover:text-slate-300" />
-                    Visit Site
-                  </Button>
-                )}
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  className="border-slate-700 hover:text-slate-300 hover:bg-slate-800 text-black"
-                  onClick={() => window.location.reload()}
-                >
-                  <RefreshCw className="w-4 h-4 mr-2 text-black hover:text-slate-300" />
-                  Refresh
-                </Button>
-              </div>
-            </div>
-          </div>
-        </header>
+
+        <DashboardHeader website={website} isLoading={isLoading} />
 
         {/* Main Content */}
         <main className="max-w-7xl mx-auto px-6 py-8 space-y-8">
@@ -243,12 +157,12 @@ const WebsiteDetailPage: React.FC = () => {
             {/* Chart - Takes up 2/3 of the width */}
             <div className="lg:col-span-2">
               {/* <SimpleChart data={responseTimeData} isLoading={isLoading} /> */}
-              <ChartLineLinear/>
+              <ChartLineLinear chartData={responseTimeData}/>
             </div>
             
             {/* Status Box - Takes up 1/3 of the width */}
             <div className="lg:col-span-1">
-              <StatusBox website={website!} isLoading={isLoading} />
+             {website && <StatusBox website={website!} isLoading={isLoading} />}
             </div>
           </div>
 
@@ -257,7 +171,7 @@ const WebsiteDetailPage: React.FC = () => {
             <CardHeader>
               <CardTitle className="text-slate-100 flex items-center">
                 <Clock className="w-5 h-5 mr-2" />
-                Last Logs (Scrollable)
+                Last Logs
               </CardTitle>
               <CardDescription className="text-slate-400">
                 Recent health check results - scroll to see more
@@ -277,21 +191,17 @@ const WebsiteDetailPage: React.FC = () => {
                 </div>
               ) : (
                 <div className="max-h-96 overflow-y-auto space-y-2 pr-2">
-                  {logs.map((log) => (
-                    <div key={log.id} className="flex items-center justify-between p-4 bg-slate-800/30 rounded-lg hover:bg-slate-800/50 transition-colors">
+                  {logs.map((log,ind) => (
+                    <div key={ind} className="flex items-center justify-between p-4 bg-slate-800/30 rounded-lg hover:bg-slate-800/50 transition-colors">
                       <div className="flex items-center space-x-4">
                         {getLogStatusBadge(log.status)}
                         <div>
-                          <p className="text-slate-100 font-medium">{log.message}</p>
-                          <p className="text-sm text-slate-400">{log.timestamp}</p>
+                          <p className="text-sm text-slate-400">{readableDate(log.createdAt)}</p>
                         </div>
                       </div>
                       <div className="flex items-center space-x-4 text-right">
                         <div>
-                          <p className="text-slate-300 font-mono">{log.responseTime}</p>
-                          {log.statusCode && (
-                            <p className="text-xs text-slate-500">Status: {log.statusCode}</p>
-                          )}
+                          <p className="text-slate-300 font-mono">{log.response_time_in_ms} ms</p>
                         </div>
                       </div>
                     </div>

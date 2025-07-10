@@ -1,15 +1,10 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Website } from '@/lib/types';
 import { 
-  Activity, 
-  ArrowLeft, 
+
   CheckCircle, 
   XCircle, 
   HelpCircle,
-  Clock,
-  TrendingUp,
-  AlertTriangle,
-  ExternalLink,
   RefreshCw
 } from 'lucide-react';
 
@@ -85,7 +80,7 @@ const StatusBox: React.FC<StatusBoxProps> = ({ website, isLoading }) => {
               {statusDisplay.text}
             </p>
             <p className="text-lg font-mono text-slate-100 mt-2">{website.response_time_in_ms}</p>
-            <p className="text-sm text-slate-400">Last checked: {website.lastChecked}</p>
+            <p className="text-sm text-slate-400">Last checked: {(new Date(website.lastChecked)).getTime()}</p>
           </div>
         </div>
       </CardContent>

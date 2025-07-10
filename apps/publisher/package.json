@@ -10,5 +10,8 @@
     "typescript": "^5",
     "reddisstream": "*",
     "db":"*"
+  },
+  "scripts": {
+    "dev":"bun index.ts"
   }
 }

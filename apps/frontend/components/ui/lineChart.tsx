@@ -20,11 +20,12 @@ import {
 
 export const description = "A linear line chart"
 
+export type chartData  = {
+    time:string,
+    response_time_in_ms:number
+}
+
 const baseTime = Date.now()
-const chartData = Array.from({ length: 6 }, (_, i) => ({
-  time: new Date(baseTime + i * 3 * 60 * 1000).toISOString(),
-  response_time_in_ms: [186, 305, 237, 73, 209, 214][i],
-}))
 
 const chartConfig = {
   response_time_in_ms: {
@@ -33,7 +34,9 @@ const chartConfig = {
   },
 } satisfies ChartConfig
 
-export function ChartLineLinear() {
+export function ChartLineLinear({chartData}:{chartData:chartData[]}) {
+    console.log(chartData)
+    
   return (
     <Card className=" bg-slate-900/30 border-slate-800 h-80">
         <ChartContainer className=" h-full bg-slate-900/30" config={chartConfig}>

@@ -1,5 +1,5 @@
 "use client"
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Activity, Eye, EyeOff, ArrowRight, Github, Mail, Lock } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
@@ -8,6 +8,8 @@ import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { api } from '@/lib/utils';
+import { useRouter } from 'next/navigation';
+import { isAxiosError } from 'axios';
 
 
 type signinError = {
@@ -27,7 +29,7 @@ const UptimeSignIn = () => {
 
   const [errors, setErrors] = useState<signinError>({});
   const [isLoading, setIsLoading] = useState(false);
-
+  const router = useRouter()
   const validateForm = () => {
     const newErrors : signinError = {};
     const email = emailRef.current?.value
@@ -49,16 +51,26 @@ const UptimeSignIn = () => {
 
   const handleSubmit = async () => {
     if (!validateForm()) return;
-    const email = emailRef.current?.value
-    const password = passwordRef.current?.value
-    setIsLoading(true);
-    // Simulate API call
-    const res = await api.post('/api/signin',{email,password})
-    setIsLoading(false);
-    
-    console.log('Sign in attempted:', email , password);
+    try {
+        const email = emailRef.current?.value
+        const password = passwordRef.current?.value
+        setIsLoading(true);
+        // Simulate API call
+        const res = await api.post('/api/signin',{email,password})
+        router.push("/dashboard")
+    } catch (error) {
+        
+    } finally{
+        setIsLoading(false);
+    }
   };
-
+  useEffect(()=>{
+    const checkAuth = async()=>{
+        const res = await api.get("/api/auth")
+        router.push('/dashboard')
+    }
+    checkAuth()
+  },[])
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 flex items-center justify-center p-6">
       {/* Background Pattern */}
@@ -184,7 +196,7 @@ const UptimeSignIn = () => {
           <CardFooter>
             <p className="text-center text-sm text-slate-400 w-full">
               Don't have an account?{' '}
-              <Button variant="link" className="px-0 text-blue-400 hover:text-blue-300">
+              <Button variant="link" className="px-0 text-blue-400 hover:text-blue-300" onClick={()=>router.push("/signup")}>
                 Sign up
               </Button>
             </p>

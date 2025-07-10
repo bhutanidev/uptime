@@ -112,6 +112,23 @@ export const recentStatusController = asyncHandler(async(req,res,next)=>{
     const skip = (page -1)*10
 
     try {
+        const found = await prisma.website.findFirst({
+            where:{
+                id:websiteId,
+                user_id:userId
+            },
+            include:{
+                website_tick:{
+                    orderBy:[{
+                        createdAt: 'desc'
+                    }],
+                    take:1
+                }
+            }
+        })
+        if(!found){
+            next(new ApiError(409,"Website not found"));
+        }
         const websites = await prisma.websiteTick.findMany({
             where:{
                 website_id:websiteId
@@ -128,7 +145,9 @@ export const recentStatusController = asyncHandler(async(req,res,next)=>{
             take:limit
         })
         console.log(websites)
-        res.json(new ApiResponse(200,{websites},"Fetch successfull"))
+        console.log(found);
+        
+        res.json(new ApiResponse(200,{id:found?.id,url:found?.url,status:found?.website_tick?.[0]?.status,response_time_in_ms:found?.website_tick?.[0]?.response_time_in_ms , lastChecked:found?.website_tick?.[0]?.createdAt ,websites},"Fetch successfull"))
     } catch (error) {
         next(new ApiError(500,"Id not valid"))
     }

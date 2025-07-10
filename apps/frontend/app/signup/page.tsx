@@ -1,5 +1,5 @@
 "use client"
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Activity, Eye, EyeOff, ArrowRight, Mail, Lock, User } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
@@ -8,6 +8,8 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { api } from '@/lib/utils';
+import { isAxiosError } from 'axios';
+import { useRouter } from 'next/navigation';
 
 type signupError = {
   name?: string;
@@ -22,7 +24,7 @@ const UptimeSignUp = () => {
   const passwordRef = useRef<HTMLInputElement | null>(null);
   const [errors, setErrors] = useState<signupError>({});
   const [isLoading, setIsLoading] = useState(false);
-
+  const router = useRouter()
   const getPasswordStrength = (password: string) => {
     if (!password) return { strength: 0, text: '', percentage: 0 };
     
@@ -100,7 +102,13 @@ const UptimeSignUp = () => {
     
     console.log('Sign up attempted:', { name, email, password });
   };
-
+  useEffect(()=>{
+    const checkAuth = async()=>{
+        const res = await api.get("/api/auth")
+        router.push('/dashboard')
+    }
+    checkAuth()
+  },[])
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 flex items-center justify-center p-6">
       {/* Background Pattern */}
@@ -263,7 +271,7 @@ const UptimeSignUp = () => {
           <CardFooter>
             <p className="text-center text-sm text-slate-400 w-full">
               Already have an account?{' '}
-              <Button variant="link" className="px-0 text-blue-400 hover:text-blue-300">
+              <Button variant="link" className="px-0 text-blue-400 hover:text-blue-300" onClick={()=>router.push("/signin")}>
                 Sign in
               </Button>
             </p>

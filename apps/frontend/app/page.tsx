@@ -1,11 +1,12 @@
 "use client"
 import React, { useState, useEffect } from 'react';
 import { Check, Activity, AlertTriangle, BarChart3, Zap, GitBranch, ArrowRight, Shield, Clock, TrendingUp, Menu, X } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 
 const UptimeLanding = () => {
   const [isVisible, setIsVisible] = useState(true);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-
+  const router = useRouter()
   const features = [
     {
       icon: <Activity className="w-6 h-6" />,
@@ -72,7 +73,7 @@ const UptimeLanding = () => {
               <a href="#features" className="text-slate-400 hover:text-slate-200 transition-colors">Features</a>
               <a href="#docs" className="text-slate-400 hover:text-slate-200 transition-colors">Docs</a>
               <a href="#pricing" className="text-slate-400 hover:text-slate-200 transition-colors">Pricing</a>
-              <button className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-all duration-200 hover:scale-105">
+              <button className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-all duration-200 hover:scale-105" onClick={()=>router.push("/signin")}>
                 Get Started
               </button>
             </div>
@@ -143,12 +144,9 @@ const UptimeLanding = () => {
           </div>
 
           <div className="flex flex-col sm:flex-row items-center justify-center space-y-4 sm:space-y-0 sm:space-x-4">
-            <button className="group bg-blue-600 hover:bg-blue-700 text-white px-8 py-4 rounded-xl font-semibold text-lg transition-all duration-200 hover:scale-105 flex items-center space-x-2 shadow-lg">
+            <button className="group bg-blue-600 hover:bg-blue-700 text-white px-8 py-4 rounded-xl font-semibold text-lg transition-all duration-200 hover:scale-105 flex items-center space-x-2 shadow-lg" onClick={()=>router.push("signin")}>
               <span>Start Monitoring</span>
               <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-            </button>
-            <button className="border border-slate-700 hover:border-slate-600 text-slate-300 hover:text-slate-100 px-8 py-4 rounded-xl font-semibold text-lg transition-all duration-200 hover:bg-slate-900/50">
-              View Documentation
             </button>
           </div>
         </div>

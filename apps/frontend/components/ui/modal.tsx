@@ -63,7 +63,7 @@ const AddWebsiteModal: React.FC<AddWebsiteModalProps> = ({ onAddWebsite }) => {
         url:res.data.data.url,
         id:res.data.data.id,
         status:"unknown",
-        response_time_in_ms:'-',
+        response_time_in_ms:0,
         lastChecked:'-'
     }
     
@@ -126,7 +126,7 @@ const AddWebsiteModal: React.FC<AddWebsiteModalProps> = ({ onAddWebsite }) => {
           <Button 
             variant="outline" 
             onClick={() => setIsDialogOpen(false)}
-            className="border-slate-700 text-slate-300 text-black"
+            className="border-slate-700  text-black"
           >
             Cancel
           </Button>

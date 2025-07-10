@@ -22,6 +22,8 @@ import { api } from '@/lib/utils';
 import { useRouter } from 'next/navigation';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Website } from '@/lib/types';
+import Logout from '@/components/ui/logoutButton';
+import { AxiosError, isAxiosError } from 'axios';
 
 
 
@@ -101,7 +103,11 @@ const UptimeHomeDashboard = () => {
             })
             setWebsites([...websites])
         } catch (error) {
-            console.log(error)
+            if(isAxiosError(error) && error.status==403){
+                router.push('/signin')
+            }else if(isAxiosError(error)){
+                alert(error.response?.data?.message)
+            }
         }
     }
     fetchWebsites()
@@ -129,10 +135,7 @@ const UptimeHomeDashboard = () => {
               </div>
               
               <div className="flex items-center space-x-4">
-                <Button variant="outline" size="sm" className="border-slate-700 text-slate-300">
-                  <LogOut className="w-4 h-4 mr-2 text-black" />
-                  <span className=' text-black'>Logout</span>
-                </Button>
+                <Logout/>
               </div>
             </div>
           </div>
